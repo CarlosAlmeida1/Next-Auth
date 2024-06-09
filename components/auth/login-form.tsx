@@ -4,7 +4,7 @@ import * as z from "zod";
 
 import { useForm } from "react-hook-form";
 import { CardWrapper } from "./card-wrapper";
-import { LoginScheam } from "@/schemas";
+import { LoginSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -26,15 +26,15 @@ export function LoginForm() {
   const [success, setSuccess] = useState<string | undefined>();
   const [isPedding, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof LoginScheam>>({
-    resolver: zodResolver(LoginScheam),
+  const form = useForm<z.infer<typeof LoginSchema>>({
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       passsword: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof LoginScheam>) {
+  function onSubmit(values: z.infer<typeof LoginSchema>) {
     setError("");
     setSuccess("");
 

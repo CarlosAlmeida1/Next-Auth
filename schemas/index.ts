@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const LoginScheam = z.object({
+export const LoginSchema = z.object({
   email: z.string().email({
     message: "E-mail obrigatório",
   }),
