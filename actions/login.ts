@@ -1,33 +1,56 @@
 "use server";
 
-import { signIn } from "@/auth";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { LoginSchema } from "@/schemas";
-import { AuthError } from "next-auth";
 import * as z from "zod";
+import { AuthError } from "next-auth";
+import bcrypt from "bcryptjs";
 
-export async function login(values: z.infer<typeof LoginSchema>) {
-  const validateFields = LoginSchema.safeParse(values);
+import { signIn } from "@/auth";
+import { LoginSchema } from "@/schemas";
+import { getUserByEmail } from "@/data/user";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
-  if (!validateFields.success) return { error: "Credenciais Inválidas" };
+export const login = async (
+  values: z.infer<typeof LoginSchema>,
+  callbackUrl?: string | null
+) => {
+  const validatedFields = LoginSchema.safeParse(values);
 
-  const { email, passsword } = validateFields.data;
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { email, password } = validatedFields.data;
+
+  const existingUser = await getUserByEmail(email);
+
+  if (!existingUser || !existingUser.email || !existingUser.password) {
+    return { error: "Email does not exist!" };
+  }
+
+  const passwordMatch = await bcrypt.compare(password, existingUser.password);
+
+  if (!passwordMatch) {
+    return { error: "Invalid Credentials!" };
+  }
 
   try {
     await signIn("credentials", {
       email,
-      passsword,
-      redirecTo: DEFAULT_LOGIN_REDIRECT,
+      password,
+      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     });
+
+    // return { success: "Login Sucess!" };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "Credenciais inválidas" };
+          return { error: "Invalid credentials!" };
         default:
-          return { error: "Credenciais inválidas" };
+          return { error: "Something went wrong!" };
       }
     }
+
     throw error;
   }
-}
+};

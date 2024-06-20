@@ -20,8 +20,15 @@ import FormError from "../form-error";
 import FormSuccess from "../form-success";
 import { useState, useTransition } from "react";
 import { login } from "@/actions/login";
+import { useSearchParams } from "next/navigation";
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already in use with different Provider!"
+      : "";
+
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
   const [isPedding, startTransition] = useTransition();
@@ -30,7 +37,7 @@ export function LoginForm() {
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
-      passsword: "",
+      password: "",
     },
   });
 
@@ -40,8 +47,8 @@ export function LoginForm() {
 
     startTransition(() => {
       login(values).then((data) => {
-        setError(data.error);
-        setSuccess(data.success);
+        setError(data?.error);
+        // setSuccess(data.success); todo 2FA
       });
     });
   }
@@ -76,7 +83,7 @@ export function LoginForm() {
             />
             <FormField
               control={form.control}
-              name="passsword"
+              name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
@@ -93,7 +100,7 @@ export function LoginForm() {
               )}
             />
           </div>
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button className="w-full" type="submit" disabled={isPedding}>
             Entrar

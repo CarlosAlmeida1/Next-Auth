@@ -20,6 +20,7 @@ import FormError from "../form-error";
 import FormSuccess from "../form-success";
 import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
+import { useSearchParams } from "next/navigation";
 
 export function RegisterForm() {
   const [error, setError] = useState<string | undefined>();
@@ -30,7 +31,7 @@ export function RegisterForm() {
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
       email: "",
-      passsword: "",
+      password: "",
       name: "",
     },
   });
@@ -95,7 +96,7 @@ export function RegisterForm() {
             />
             <FormField
               control={form.control}
-              name="passsword"
+              name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
